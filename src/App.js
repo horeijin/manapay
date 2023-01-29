@@ -9,6 +9,11 @@ import { AddMembers } from './components/AddMembers';
 import { ExpenseMain } from './components/ExpenseMain';
 import { ROUTES } from './routes';
 
+import { Amplify } from 'aws-amplify';
+import awsmobile from "./aws-exports";
+
+Amplify.configure(awsmobile);
+
 const App = () => {
   return (
     <BrowserRouter>

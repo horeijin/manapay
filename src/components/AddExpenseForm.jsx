@@ -3,12 +3,16 @@ import { useSetRecoilState, useRecoilValue } from "recoil";
 import { Form, Button, Row, Col } from "react-bootstrap";
 
 import { groupMembersState } from "../state/groupMembers";
+import { groupIdState } from '../state/groupId';
 import { expensesState } from "../state/expenses";
 
 import styled from "styled-components";
 
+import { API } from "aws-amplify";
+
 export const AddExpenseform = () => {
   const members = useRecoilValue(groupMembersState);
+  const guid = useRecoilValue(groupIdState);
 
   const today = new Date();
   const [date, setDate] = useState(
@@ -39,6 +43,19 @@ export const AddExpenseform = () => {
     return descValid && payerValid && amountValid;
   };
 
+  const saveExpense = (expense) => {
+    API.put('groupsApi', `/groups/${guid}/expenses`, {
+      body: {
+        expense
+      }
+    })
+      .then(_response => {
+        setExpense(expenses => [...expenses, expense ])
+      }).catch(_error => {
+        alert("정산 내용 추가에 실패 했습니다. 다시 시도해 주세요.")
+      })
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -50,7 +67,8 @@ export const AddExpenseform = () => {
       //에러 처리
     } else {
       const newExpense = { date, desc, amount, payer };
-      setExpense((expense) => [...expense, newExpense]);
+      //setExpense((expense) => [...expense, newExpense]);
+      saveExpense(newExpense);
     }
     setValidated(true);
   };

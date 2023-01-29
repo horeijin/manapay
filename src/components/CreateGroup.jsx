@@ -1,22 +1,41 @@
 import { useState } from 'react';
 import { Form } from "react-bootstrap";
-import { useSetRecoilState } from 'recoil';
+import { useSetRecoilState, useRecoilState } from 'recoil';
 
 import { groupNameState } from '../state/groupName';
-import {CenteredOverlayForm } from './shared/CenteredOverlayForm';
+import { groupIdState } from '../state/groupId';
+import { CenteredOverlayForm } from './shared/CenteredOverlayForm';
 
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from '../routes';
+import { ROUTE_UTILS } from '../routes';
 
+import { API } from "aws-amplify";
 
 
 export const CreateGroup = () =>{
     const [validated, setValidated] = useState(false); //검증하는 절차를 거쳤나? 안 거쳤나?
     const [validGroupName, setValidGroupName] = useState(false);
-    //const [groupName, setGroupName] = useRecoilState(groupNameState);
-    const setGroupName = useSetRecoilState(groupNameState);
+    const [groupName, setGroupName] = useRecoilState(groupNameState);
+    const setGroupId = useSetRecoilState(groupIdState);
 
     const navigate = useNavigate();
+
+    const saveGroupName = () => {
+        API.post('groupsApi', '/groups', {
+            body: {
+                groupName,
+            }
+        })
+        .then(({ data }) => {
+            const { guid } = data;
+            setGroupId(guid);
+            navigate(ROUTE_UTILS.ADD_MEMBERS(guid));
+        })
+        .catch((error) => {
+            console.error(error)
+            alert(error.response.data.error);
+        })
+    }
     
     const handleSubmit = (e) => {
         e.preventDefault()
@@ -24,7 +43,7 @@ export const CreateGroup = () =>{
         const form = e.currentTarget
         if (form.checkValidity()) {
             setValidGroupName(true);
-            navigate(ROUTES.ADD_MEMBERS);
+            saveGroupName();
         } else {
             e.stopPropagation();
             setValidGroupName(false);

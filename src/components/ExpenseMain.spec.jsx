@@ -21,7 +21,7 @@ const renderComponent = () => {
   const amountInput = screen.getByPlaceholderText(/비용은 얼마/i);
   const payerInput = screen.getByDisplayValue(/누가 결제/i);
   const addButton = screen.getByText("ADD");
-  //const shareButton = screen.getByTestId("share-btn");
+  const shareButton = screen.getByTestId("share-btn");
 
   const descErrorMessage = screen.getByText(
     "비용 내용을 입력해 주셔야 합니다."
@@ -37,7 +37,7 @@ const renderComponent = () => {
     amountInput,
     payerInput,
     addButton,
-    // shareButton,
+    shareButton,
     descErrorMessage,
     payerErrorMessage,
     amountErrorMessage,
@@ -99,7 +99,6 @@ describe("비용정산 메인 페이지", () => {
   });
 
   //(2) 입력한 비용 리스트 보여주는 컴포넌트
-
   describe("비용 리스트 컴포넌트", () => {
     test("비용 리스트 컴포넌트 렌더링 되는가", () => {
       renderComponent();
@@ -179,6 +178,53 @@ describe("비용정산 메인 페이지", () => {
 
       const component = screen.getByText(/정산 결과/i);
       expect(component).toBeInTheDocument();
+    })
+  });
+
+  //(5) 공유 버튼 컴포넌트 
+  describe('공유 버튼 컴포넌트', () => {
+    test('공유 버튼 컴포넌트가 렌더링 되는가', () => {
+      const { shareButton } = renderComponent();
+      expect(shareButton).toBeInTheDocument();
+    });
+
+    describe('공유 버튼 클릭시...', () => {
+      let userAgent = jest.spyOn(window.navigator, 'userAgent', 'get'); //공유할 떄 사용하는 함수
+
+      describe('모바일에서...', () => {
+
+        beforeAll(() => {
+          global.navigator.share = jest.fn(); //네비게이터 쉐어 모킹
+          userAgent.mockReturnValue('iPhone');
+        })
+
+        test('공유용 다이얼로그가 뜬다', async () => {
+          const { shareButton } = renderComponent();
+
+          await userEvent.click(shareButton);
+          expect(navigator.share).toBeCalledTimes(1); //제대로 호출되었는지 감시 
+        })
+
+      })
+
+      describe('데스크톱에서...', () => {
+        beforeAll(() => {
+          userAgent.mockReturnValue('Mozilla/5.0 Chrome/108.0.0.0 Safari/537.36');
+          global.navigator.clipboard = {
+            writeText: () => new Promise(jest.fn())
+          }
+        })
+
+        test('클립보드에 링크가 복사된다', async () => {
+          const writeText = jest.spyOn(navigator.clipboard, 'writeText');
+          const { shareButton } = renderComponent();
+
+          await userEvent.click(shareButton);
+
+          expect(writeText).toBeCalledTimes(1);
+          expect(writeText).toHaveBeenCalledWith(window.location.href);
+        })
+      })
     })
   })
 
