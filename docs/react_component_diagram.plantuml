@@ -1,0 +1,68 @@
+@startuml
+
+' 주석처리 (cntl+/)
+
+' 1. 컴포넌트 뽑아내고 상속이나 조합 관계 정의
+' 2. 사용할 디자인 패턴 결정 (Container vs. Provider) : 코딩하는 단계에서 결정하자.
+' 3. 컴포넌트에 필요한 props가 어떤 게 있을지 정의
+
+object CreateGroup {
+    state groupName : string
+    state formValidated : boolean
+}
+object AddMembers {
+    state members : string[]
+    state formValidated : boolean
+}
+object ExpenseMain {
+    groupName : string
+    members : string[]
+
+    'store에 저장된 상태를 가져와 쓸거라 별도의 상태관리는 필요없음 
+}
+
+object CenteredOverlayForm {
+    props title : string
+    props inputType : string
+    propshandleFormSubmitted : function
+
+    state currentValue : string
+}
+
+object AddExpenseForm {
+    members : string[]
+
+    state payer : string
+    state description : string
+    state amount : number
+    state paidAt : date
+    state formValidated : boolean
+}
+object ExpenseSummary {
+    expenses : expenses[]
+    members : stirn[]
+}
+object ExpenseList {
+    expenses : expenses[]
+}
+
+object CenteredOverlay
+
+' CenteredOverlayForm 조합해서 된게 CreateGroup, AddMembers
+CreateGroup *-- CenteredOverlayForm
+AddMembers *-- CenteredOverlayForm
+
+' 세가지 컴포넌트를 조합해서 된게 ExpenseMain
+ExpenseMain *-- AddExpenseForm
+ExpenseMain *-- ExpenseSummary
+ExpenseMain *-- ExpenseList
+
+CenteredOverlayForm *-- CenteredOverlay
+ExpenseList *--CenteredOverlay
+
+
+
+
+
+
+@enduml
